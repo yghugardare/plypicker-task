@@ -1,4 +1,3 @@
-
 import User from "@/models/User";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
@@ -7,7 +6,8 @@ import connectDb from "@/lib/connectDb";
 export async function POST(req: Request) {
   await connectDb();
   try {
-    const { username, email, password, role,confirmPassword } = await req.json();
+    const { username, email, password, role, confirmPassword } =
+      await req.json();
     if (!username || !email || !password || !role || !confirmPassword) {
       return NextResponse.json(
         { success: false, message: "All fields are required" },
@@ -22,11 +22,15 @@ export async function POST(req: Request) {
       );
     }
     // check if the confirm password is correct
-    if(password.trim() !== confirmPassword.trim()){
-        return NextResponse.json(
-            { success: false, message: "Password confirmation field does not match the Password field!" },
-            { status: 400 }
-          );
+    if (password.trim() !== confirmPassword.trim()) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Password confirmation field does not match the Password field!",
+        },
+        { status: 400 }
+      );
     }
     // hash the password
     const hashedPassoword = await bcrypt.hash(password, 10);
