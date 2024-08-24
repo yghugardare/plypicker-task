@@ -7,8 +7,8 @@ import connectDb from "@/lib/connectDb";
 export async function POST(req: Request) {
   await connectDb();
   try {
-    const { username, email, password, role } = await req.json();
-    if (!username || !email || !password || !role) {
+    const { username, email, password, role,confirmPassword } = await req.json();
+    if (!username || !email || !password || !role || !confirmPassword) {
       return NextResponse.json(
         { success: false, message: "All fields are required" },
         { status: 400 }
@@ -20,6 +20,13 @@ export async function POST(req: Request) {
         { success: false, message: "User with same email already exists!" },
         { status: 400 }
       );
+    }
+    // check if the confirm password is correct
+    if(password.trim() !== confirmPassword.trim()){
+        return NextResponse.json(
+            { success: false, message: "Password confirmation field does not match the Password field!" },
+            { status: 400 }
+          );
     }
     // hash the password
     const hashedPassoword = await bcrypt.hash(password, 10);
