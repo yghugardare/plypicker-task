@@ -5,12 +5,14 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useToast } from "@/components/ui/use-toast"
+
 
 export function Login() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [password, setPassword] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-
+  const {toast} = useToast();
   function handleLogin(e: FormEvent) {
     e.preventDefault();
     const obj = {
@@ -21,6 +23,10 @@ export function Login() {
 
     setPassword("");
     setEmail("");
+    toast({
+      title : "Success",
+      description: "User log in successfull!"
+    })
   }
   return (
     <div className="flex min-h-[92] mt-36 items-center justify-center bg-background">

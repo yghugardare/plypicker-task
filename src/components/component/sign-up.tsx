@@ -12,6 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import { useToast } from "@/components/ui/use-toast"
+
 
 export function SignUp() {
   const [username, setUsername] = useState<string>("");
@@ -19,6 +21,7 @@ export function SignUp() {
   const [email, setEmail] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [role, setRole] = useState<string>("");
+  const {toast} = useToast()
 
   function handleRegistration(e:FormEvent){
     e.preventDefault()
@@ -31,6 +34,11 @@ export function SignUp() {
     setEmail("")
     setRole("")
     setUsername("")
+    toast({
+      variant : "destructive",
+      title: "Error",
+      description :"Something went wrong! Dont know"
+    })
   }
   return (
     <div className="flex min-h-[92vh] items-center justify-center bg-background">
