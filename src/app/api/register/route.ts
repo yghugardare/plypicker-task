@@ -45,12 +45,13 @@ export async function POST(req: Request) {
       { success: true, message: "User created successfully!" },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error:any) {
     console.error("Error registering user:", error);
+    const mongooseError = error.errors ? error.errors[Object.keys(error.errors)[0]].message : "Error registering user";
     return NextResponse.json(
       {
         success: false,
-        message: "Error registering user",
+        message: mongooseError
       },
       { status: 500 }
     );

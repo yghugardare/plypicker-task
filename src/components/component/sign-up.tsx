@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useToast } from "@/components/ui/use-toast"
+import { useRouter } from "next/navigation";
 
 
 export function SignUp() {
@@ -21,24 +22,54 @@ export function SignUp() {
   const [email, setEmail] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [role, setRole] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false)
   const {toast} = useToast()
+  const router = useRouter();
 
-  function handleRegistration(e:FormEvent){
-    e.preventDefault()
-    const obj = {
+  async function handleRegistration(e:FormEvent){
+    e.preventDefault();
+    setLoading(true);
+    const userObj = {
       username,email,role,password,confirmPassword
     }
-    console.log(obj)
-    setConfirmPassword("")
-    setPassword("")
-    setEmail("")
-    setRole("")
-    setUsername("")
-    toast({
-      variant : "destructive",
-      title: "Error",
-      description :"Something went wrong! Dont know"
-    })
+    try{
+      const res = await fetch("/api/register",{
+        method :'POST',
+        headers : {
+          'Content-Type' : 'application/json',
+
+        },
+        body : JSON.stringify(userObj)
+      })
+      const data = await res.json();
+      // console.log(data)
+      if(data?.success === true || res.ok){
+        toast({
+          title:"success",
+          description:data?.message|| "User registered!"
+        })
+        router.push('/dashboard')
+      }else{
+        toast({
+          variant : "destructive",
+          title : "Error",
+          description : data?.message || "Something went wrong!"
+        })
+      }
+    }catch(error:any){
+      toast({
+        variant : "destructive",
+        description : error?.message || "Something went wrong!"
+      })
+    }finally{
+      setLoading(false)
+      setConfirmPassword("")
+      setPassword("")
+      setEmail("")
+      setRole("")
+      setUsername("")
+      // console.log("Hi")
+    }
   }
   return (
     <div className="flex min-h-[92vh] items-center justify-center bg-background">
@@ -103,8 +134,8 @@ export function SignUp() {
               </SelectContent>
             </Select>
           </div>
-          <Button type="submit" className="w-full">
-            Sign Up
+          <Button type="submit" className={`w-full !cursor-pointer ${loading && "!cursor-not-allowed"}`} disabled={loading} >
+            {loading ? "Signing Up...":"Sign Up"}
           </Button>
         </form>
         <div className="text-center text-sm text-muted-foreground">

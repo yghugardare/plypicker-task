@@ -1,4 +1,3 @@
-"use client";
 
 import { SignUp } from "@/components/component/sign-up";
 import Link from "next/link";
