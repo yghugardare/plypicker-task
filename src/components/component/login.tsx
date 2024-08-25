@@ -5,28 +5,54 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useToast } from "@/components/ui/use-toast"
-
+import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
 
 export function Login() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [password, setPassword] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-  const {toast} = useToast();
-  function handleLogin(e: FormEvent) {
+  const { toast } = useToast();
+  const router = useRouter();
+  async function handleLogin(e: FormEvent) {
     e.preventDefault();
-    const obj = {
+    const user = {
       email,
       password,
     };
-    console.log(obj);
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(user),
+      });
+      const data = await res.json();
+      if(data.success || res.ok){
+        localStorage.setItem('token', data.token);
+        toast({
+          title: "Success",
+          description: "User log in successfull!",
+        });
+        router.push("/")
+      }else{
+        toast({
+          variant : "destructive",
+          title : "Error",
+          description : data?.message || "Something went wrong!"
+        })
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        description: error?.message || "Something went wrong!",
+      });
+    }
 
     setPassword("");
     setEmail("");
-    toast({
-      title : "Success",
-      description: "User log in successfull!"
-    })
+    
   }
   return (
     <div className="flex min-h-[92] mt-36 items-center justify-center bg-background">
@@ -76,7 +102,7 @@ export function Login() {
             </Button>
           </div>
           <Button type="submit" className="w-full">
-            Sign In
+            Log In
           </Button>
         </form>
         <div className="text-center text-sm text-muted-foreground">
