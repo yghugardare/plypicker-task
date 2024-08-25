@@ -41,7 +41,12 @@ export async function POST(request: Request) {
       process.env.JWT_SECRET as string,
       { expiresIn: "1h" }
     );
-    return NextResponse.json({success:true ,token },{
+    const userDetailsWithoutPassowrd = {
+      username : user.username,
+      role : user.role,
+      email : user.email
+    }
+    return NextResponse.json({success:true ,token,user: userDetailsWithoutPassowrd},{
         status:200
     })
   } catch (error) {

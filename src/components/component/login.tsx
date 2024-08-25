@@ -10,12 +10,14 @@ import { useRouter } from "next/navigation";
 
 export function Login() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [password, setPassword] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const { toast } = useToast();
   const router = useRouter();
   async function handleLogin(e: FormEvent) {
     e.preventDefault();
+    setLoading(true);
     const user = {
       email,
       password,
@@ -29,30 +31,31 @@ export function Login() {
         body: JSON.stringify(user),
       });
       const data = await res.json();
-      if(data.success || res.ok){
-        localStorage.setItem('token', data.token);
+      if (data.success || res.ok) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("logedin-user", JSON.stringify(data.user));
         toast({
           title: "Success",
           description: "User log in successfull!",
         });
-        router.push("/")
-      }else{
+        router.push("/");
+      } else {
         toast({
-          variant : "destructive",
-          title : "Error",
-          description : data?.message || "Something went wrong!"
-        })
+          variant: "destructive",
+          title: "Error",
+          description: data?.message || "Something went wrong!",
+        });
       }
     } catch (error: any) {
       toast({
         variant: "destructive",
         description: error?.message || "Something went wrong!",
       });
+    } finally {
+      setLoading(false);
+      setPassword("");
+      setEmail("");
     }
-
-    setPassword("");
-    setEmail("");
-    
   }
   return (
     <div className="flex min-h-[92] mt-36 items-center justify-center bg-background">
@@ -101,8 +104,14 @@ export function Login() {
               <span className="sr-only">Toggle password visibility</span>
             </Button>
           </div>
-          <Button type="submit" className="w-full">
-            Log In
+          <Button
+            type="submit"
+            className={`w-full ${
+              loading ? "cursor-not-allowed" : "cursor-pointer"
+            }`}
+            disabled={loading}
+          >
+            {loading ? "Loging in..." : "Login"}
           </Button>
         </form>
         <div className="text-center text-sm text-muted-foreground">

@@ -1,104 +1,54 @@
 "use client";
 
-import { UserObjectType } from "@/app/api/get-user/route";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+
 import { useToast } from "./ui/use-toast";
 
+// import { useEffect } from "react";
+
+import { useEffect } from "react";
+
 function NavBar() {
-  const [user, setUser] = useState<UserObjectType | null>(null);
-  const { toast } = useToast();
   const router = useRouter();
-  useEffect(() => {
-    async function getUserData() {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.log("User not loged in");
-        return;
-      }
-      try {
-        const res = await fetch("/api/get-user", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
-        if (data.success) {
-          setUser(data.user);
-          toast({
-            title : data.user.role,
-            description: `Welcome! ${data.user.username}`,
-          });
-          router.push("/")
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: data?.message || "Something went wrong!",
-          });
-        }
-      } catch (error: any) {
-        toast({
-          variant: "destructive",
-          description: error?.message || "Something went wrong!",
-        });
-      }
-    }
-    getUserData();
-  }, [toast,router,setUser]);
+  const { toast } = useToast();
+  const user = {role : "admin"}
   
   function handleLogout() {
     localStorage.removeItem("token");
+    localStorage.removeItem("logedin-user");
+    
     {
       toast({
-        description : "User Loged Out!"
-      })
+        description: "User Loged Out!",
+      });
     }
     router.push("/login");
   }
 
   return (
     <nav className="h-[8vh] bg-background flex  items-center justify-between">
-      <h1 className="font-semibold text-3xl font-sans ml-10">
+      <Link href={"/"}><h1 className="font-semibold text-3xl font-sans ml-10">
         Ply<span className="text-primary italic">Picker</span>
-      </h1>
+      </h1></Link>
       <ul className="flex items-center mr-24 gap-x-10">
-        {user?.role === "admin" && (
-          <li>
-            <Link href="/dashboard" className="text-white hover:text-primary">
-              Dashboard
-            </Link>
+        {user && (
+          <li className="hover:text-primary">
+            <Link href={"/dashboard"}>Dashboard</Link>
           </li>
         )}
-        {user && user?.role !== "admin" && (
+        {user && (
           <li>
-            <Link href="/requests" className="text-white hover:text-primary">
-              Requests
-            </Link>
+            <Link href={"/profile"}>Profile</Link>
           </li>
         )}
         {user ? (
-          <>
-            <li>
-              <Link href="/profile" className="text-white hover:text-primary">
-                Profile
-              </Link>
-            </li>
-            <li>
-              <button
-                onClick={handleLogout}
-                className="text-white hover:text-primary"
-              >
-                Logout
-              </button>
-            </li>
-          </>
+          <li>
+            <button onClick={handleLogout}>Logout</button>
+          </li>
         ) : (
           <li>
-            <Link href="/login" className="text-white hover:text-primary">
-              Login
-            </Link>
+            <Link href={"/login"}>Login</Link>
           </li>
         )}
       </ul>
