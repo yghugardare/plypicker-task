@@ -9,7 +9,7 @@ export default function Home() {
   useEffect(() => {
     const user = fetchUser();
     setUser(user);
-  }, []);
+  }, [setUser]);
   return (
     <main>
       <div>hi</div>

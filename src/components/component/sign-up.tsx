@@ -48,7 +48,7 @@ export function SignUp() {
           title:"success",
           description:data?.message|| "User registered!"
         })
-        router.push('/dashboard')
+        router.push('/login')
       }else{
         toast({
           variant : "destructive",

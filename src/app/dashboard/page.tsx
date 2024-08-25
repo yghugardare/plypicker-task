@@ -1,10 +1,20 @@
+"use client"
+
+
+import useUserStore from "@/store/user-store"
 
 
 function page() {
+  const user = useUserStore((state) => state.user);
+  if(!user){
+    return (
+      <div>Loading...</div>
+    )
+  }
   return (
-    <div>
+    <div className="">
         <div>
-            Dashboard
+            Dashboard {user?.role}
         </div>
     </div>
   )
