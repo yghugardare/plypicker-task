@@ -8,16 +8,23 @@ import { useToast } from "./ui/use-toast";
 // import { useEffect } from "react";
 
 import { useEffect } from "react";
+import useUserStore from "@/store/user-store";
+import fetchUser from "@/lib/fetch-user";
 
 function NavBar() {
   const router = useRouter();
   const { toast } = useToast();
-  const user = {role : "admin"}
-  
+  let user = useUserStore((state) => state.user);
+  const setUser = useUserStore((state) => state.setUser);
+  useEffect(()=>{
+    // trying to persist the value
+    const storedUser = fetchUser();
+    setUser(storedUser);
+  },[setUser])
   function handleLogout() {
     localStorage.removeItem("token");
     localStorage.removeItem("logedin-user");
-    
+    setUser(null)
     {
       toast({
         description: "User Loged Out!",
