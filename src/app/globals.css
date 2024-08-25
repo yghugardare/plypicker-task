@@ -4,6 +4,8 @@
 
 @layer base {
   :root {
+    --rejected: 358 100% 57%;
+    --approved: 22 100% 57%;
     --background: 20 14.3% 4.1%;
     --foreground: 0 0% 95%;
     --card: 24 9.8% 10%;
@@ -28,6 +30,7 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    
   }
 
   .dark {
@@ -55,6 +58,8 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    --rejected: 358 100% 57%;
+    --approved: 22 100% 57%;
   }
 }
 

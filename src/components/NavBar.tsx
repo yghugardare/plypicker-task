@@ -45,16 +45,16 @@ function NavBar() {
           </li>
         )}
         {user && (
-          <li>
+          <li className="hover:text-primary">
             <Link href={"/profile"}>Profile</Link>
           </li>
         )}
         {user ? (
-          <li>
+          <li className="hover:text-primary">
             <button onClick={handleLogout}>Logout</button>
           </li>
         ) : (
-          <li>
+          <li className="hover:text-primary">
             <Link href={"/login"}>Login</Link>
           </li>
         )}
