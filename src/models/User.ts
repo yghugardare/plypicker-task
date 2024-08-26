@@ -7,34 +7,37 @@ interface IUser extends Document {
   role: "admin" | "team-member";
 }
 
-const UserSchema: Schema<IUser> = new Schema({
-  email: {
-    type: String,
-    required: [true, "Email is required"],
-    // no two docs should have same email
-    unique: true,
-    // match regex
-    // start with one or more character followed by @ followed by
-    // domain followed by dot followed by one or more character
-    match: [/.+\@.+\..+/, 'Please use a valid email address'],
+const UserSchema: Schema<IUser> = new Schema(
+  {
+    email: {
+      type: String,
+      required: [true, "Email is required"],
+      // no two docs should have same email
+      unique: true,
+      // match regex
+      // start with one or more character followed by @ followed by
+      // domain followed by dot followed by one or more character
+      match: [/.+\@.+\..+/, "Please use a valid email address"],
+    },
+    password: {
+      type: String,
+      required: [true, "Password is required!"],
+    },
+    username: {
+      type: String,
+      required: [true, "Username is required"],
+      unique: true,
+      // Eg - yash Ghugardare => yashGhugardare
+      trim: true,
+    },
+    role: {
+      type: String,
+      enum: ["admin", "team-member"],
+      required: [true, "Select a valid role!"],
+    },
   },
-  password: {
-    type: String,
-    required: [true, "Password is required!"],
-  },
-  username: {
-    type: String,
-    required: [true, "Username is required"],
-    unique: true,
-    // Eg - yash Ghugardare => yashGhugardare
-    trim: true,
-  },
-  role: {
-    type: String,
-    enum: ["admin", "team-member"],
-    required: [true, "Select a valid role!"],
-  },
-});
+  { timestamps: true }
+);
 
 // if the user model is already defined , during multiple hot reloads
 // in next js it prevents the code from redefining the user model again and again ,
