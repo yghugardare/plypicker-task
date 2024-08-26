@@ -20,8 +20,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import useUserStore from "@/store/user-store";
 function SideBar() {
-//   const pathname = usePathname();
+  //   const pathname = usePathname();
+  const user = useUserStore((state) => state.user);
   return (
     <aside className="hidden w-64 flex-col border-r bg-background p-6 md:flex">
       <div className="mb-8 flex items-center gap-2">
@@ -32,35 +34,50 @@ function SideBar() {
         <Link
           href="/dashboard"
           className="flex items-center gap-2 hover:text-primary rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted  focus:bg-muted  focus:text-primary"
-          
         >
           <InboxIcon className="h-5 w-5" />
           Profile
         </Link>
-        <Link
-          href="/dashboard/add"
-          className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-primary focus:bg-muted focus:text-primary"
-          
-        >
-          <PlusIcon className="h-5 w-5" />
-          Add Product
-        </Link>
+        {user?.role === "admin" && (
+          <Link
+            href="/dashboard/add"
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
+          >
+            <PlusIcon className="h-5 w-5" />
+            Add Product
+          </Link>
+        )}
         <Link
           href="/dashboard/products"
           className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-primary focus:bg-muted focus:text-primary"
-          prefetch={false}
         >
           <FilePenIcon className="h-5 w-5" />
-          Edit Products
+          {user?.role === "admin" ? "Edit Product" : "Request Change"}
         </Link>
-        <Link
-          href="/dashboard/pending-requests"
-          className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-primary focus:bg-muted focus:text-primary"
-          prefetch={false}
-        >
-          <CircleCheckIcon className="h-5 w-5" />
-          Review Requests
-        </Link>
+        {
+                user?.role === "admin" && (
+                    <Link
+              href="/dashboard/pending-requests"
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
+             
+            >
+              <CircleCheckIcon className="h-5 w-5" />
+              Review Requests
+            </Link>
+                )
+            }
+            {
+                user?.role !== "admin" && (
+                    <Link
+              href="/dashboard/my-submissions"
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
+              
+            >
+              <CircleCheckIcon className="h-5 w-5" />
+              My Submissions
+            </Link>
+                )
+            }
       </nav>
     </aside>
   );

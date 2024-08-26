@@ -7,8 +7,11 @@ import React from "react";
 function AddPage() {
   const user = useUserStore((state) => state.user);
 
-  if (!user) {
-    <div>Loading User...</div>;
+  if(!user){ 
+    return <div className="w-full h-full flex justify-center items-center">
+
+        <h1 className="text-3xl">Loading...</h1>
+    </div>
   }
   if (user?.role !== "admin") {
     // or we could also redirect to / route
