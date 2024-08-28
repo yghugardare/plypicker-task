@@ -120,6 +120,7 @@ function MobileSideBar() {
               {pathname === "/dashboard/my-submissions" &&
                 user?.role === "team-member" &&
                 "Team Member Submissions"}
+                {pathname.includes("/dashboard/product/") && "Product Details" }
             </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>

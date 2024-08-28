@@ -7,7 +7,9 @@ function ReviewPage() {
   if (!user) {
     return (
       <div className="w-full h-full flex justify-center items-center">
-        <h1 className="text-3xl">Loading...</h1>
+        
+        <h1 className="text-3xl">You need to Login to access this resource⚠️</h1>
+        
       </div>
     );
   }

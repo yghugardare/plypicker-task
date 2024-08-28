@@ -14,13 +14,12 @@ type Product = {
   description: string;
   productFirebaseImageLink: string;
 };
-function EditProduct() {
-  const [products, setProducts] = useState<Product[]>([]);
+function ProductsToDisplayForTeamMembers() {
+    const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { searchTerm } = useSearchTermStore();
   const { toast } = useToast();
-
   useEffect(() => {
     // Define an async function to fetch the products
     const fetchProducts = async () => {
@@ -113,7 +112,7 @@ function EditProduct() {
             </h4>
             <Link href={`/dashboard/product/${product._id}`}>
               <Button variant="outline" className="mt-4 w-full">
-                Edit Product
+                Request Product Edit
               </Button>
             </Link>
           </div>
@@ -123,4 +122,6 @@ function EditProduct() {
   );
 }
 
-export default EditProduct;
+
+
+export default ProductsToDisplayForTeamMembers;
