@@ -21,6 +21,20 @@ import { storage } from "@/lib/firebaseConfig";
 import setCanvasPreview from "@/hooks/setCanvasPreview";
 import { useToast } from "../ui/use-toast";
 import { convertImageUrlToBase64 } from "@/hooks/convertFirebaseUrltoBase64";
+import { Delete, DeleteIcon } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useRouter } from "next/navigation";
+
 
 const MIN_WIDTH = 50;
 const ASPECT_RATIO = 1;
@@ -43,10 +57,12 @@ function AdminEditProduct({ product }: { product: Product }) {
   const [firebaseImage, setFirebaseImage] = useState<string>("");
   const [isCropping, setIsCropping] = useState<boolean>(false);
   const [submiting, setSubmiting] = useState<boolean>(false);
+  const [deleting, setDeleting] = useState<boolean>(false);
   const imageRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const router = useRouter()
   const {
     imgUrl,
     setImgUrl,
@@ -71,6 +87,9 @@ function AdminEditProduct({ product }: { product: Product }) {
     const centeredCrop = centerCrop(crop, width, height);
     setCrop(centeredCrop);
   };
+  const say = () =>{
+    console.log("some")
+  }
   const handleEditProduct = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmiting(true);
@@ -186,6 +205,40 @@ function AdminEditProduct({ product }: { product: Product }) {
       //   description :"Here are your latest updated changes!!"
       // })
       setSubmiting(false);
+    }
+  };
+  const handleDeleteProduct = async () => {
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/delete-product/${product?._id}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: data.message,
+        });
+        setDeleting(false);
+        return;
+      }
+      toast({
+        title: "Success",
+        description: data.message,
+      });
+      // console.log('Product deleted successfully:', data.message);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete product:" || error.message,
+      });
+    } finally {
+      setDeleting(false);
+      router.push("/dashboard/products")
     }
   };
   return (
@@ -343,18 +396,65 @@ function AdminEditProduct({ product }: { product: Product }) {
               required={true}
             />
           </div>
-          <Button
-            type="submit"
-            className="justify-self-end"
-            disabled={submiting}
-          >
-            {submiting ? "Updating..." : "Edit Product as Admin"}
-          </Button>
+
+          <div className="flex justify-end gap-2">
+            <Button type="submit" className="justify-self-end">
+              Add Product
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  className="justify-self-end"
+                  
+                >
+                  <TrashIcon className="w-5 h-5 mr-2" />
+                  {!deleting ? "Delete" : "Deleting.."}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete
+                    your product and remove your data from our Database.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteProduct}>Delete</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </form>
       </div>
     </main>
   );
 }
+function TrashIcon(
+  props: JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>
+) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 6h18" />
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+    </svg>
+  );
+}
+
 function CropIcon(
   props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>
 ) {
