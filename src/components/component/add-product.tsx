@@ -69,10 +69,14 @@ function AddProduct() {
         title: "Error",
         description: "Upload Image File please!",
       });
+      setSubmiting(false);
       return;
     }
     // get cloud storage reference
-    const storageRef = ref(storage, `images/product_${imgFile.name}`);
+    const storageRef = ref(
+      storage,
+      `images/product_${imgFile.name}createdAt${Date.now()}`
+    );
     try {
       console.log(firebaseBase64UploadUrl);
       await uploadString(storageRef, firebaseBase64UploadUrl, "base64", {
@@ -87,6 +91,8 @@ function AddProduct() {
         description,
         price,
         productFirebaseImageLink,
+        productBase64ImageUrl: imgUrl,
+        imgType: imgFile.type,
       };
       console.log(obj);
       // send post request to db
@@ -119,10 +125,10 @@ function AddProduct() {
       });
     } finally {
       setSubmiting(false);
-      setProductName("")
-      setPrice("")
-      setDescription("")
-      setImgUrl("")
+      setProductName("");
+      setPrice("");
+      setDescription("");
+      setImgUrl("");
     }
   };
   return (
@@ -225,7 +231,17 @@ function AddProduct() {
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => setIsCropping((isCropping) => !isCropping)}
+              onClick={() => {
+                if (firebaseBase64UploadUrl.length <= 0) {
+                  toast({
+                    title: "No image uploaded to crop",
+                    description: "Upload image",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                setIsCropping((isCropping) => !isCropping);
+              }}
             >
               <CropIcon className="w-5 h-5 mr-2" />
               {isCropping ? "Stop Cropping" : "Crop Image"}

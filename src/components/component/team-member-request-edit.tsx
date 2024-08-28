@@ -20,16 +20,10 @@ import { getDownloadURL, ref, uploadString } from "firebase/storage";
 import { storage } from "@/lib/firebaseConfig";
 import setCanvasPreview from "@/hooks/setCanvasPreview";
 import { useToast } from "../ui/use-toast";
-
+import { type Product } from "./admin-edit-product";
 const MIN_WIDTH = 50;
 const ASPECT_RATIO = 1;
-type Product = {
-    _id: string;
-    productName: string;
-    price: string;
-    description: string;
-    productFirebaseImageLink: string;
-  };
+
 
 function TeamMemberEditRequest({product}:{product:Product}) {
     const [crop, setCrop] = useState<Crop>();

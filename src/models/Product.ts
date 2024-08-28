@@ -5,6 +5,8 @@ interface IProuct extends Document {
   price: string;
   description: string;
   productFirebaseImageLink: string;
+  productBase64ImageUrl : string;
+  imgType : string;
 }
 
 const ProductSchema: Schema<IProuct> = new Schema(
@@ -25,6 +27,14 @@ const ProductSchema: Schema<IProuct> = new Schema(
       type: String,
       required: [true, "Product Image is required"],
     },
+    productBase64ImageUrl : {
+      type : String,
+      required : [true,"Base 64 image link is required"]
+    },
+    imgType : {
+      type :String,
+      required : [true,"File type is required"]
+    }
   },
   { timestamps: true }
 );

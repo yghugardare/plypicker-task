@@ -6,14 +6,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { useToast } from "../ui/use-toast";
 import Link from "next/link";
-
-type Product = {
-  _id: string;
-  productName: string;
-  price: string;
-  description: string;
-  productFirebaseImageLink: string;
-};
+import { type Product } from "./admin-edit-product";
 function EditProduct() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,7 +98,7 @@ function EditProduct() {
           />
           <div className="p-4 bg-background">
             <h3 className="text-xl font-bold">{product.productName}</h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground truncate">
               {product.description}
             </p>
             <h4 className="text-lg font-semibold md:text-xl text-primary">

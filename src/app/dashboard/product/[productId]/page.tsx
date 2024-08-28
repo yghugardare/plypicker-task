@@ -5,15 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 import useUserStore from "@/store/user-store";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-
-type Product = {
-  _id: string;
-  productName: string;
-  price: string;
-  description: string;
-  productFirebaseImageLink: string;
-};
-
+import { type Product } from "@/components/component/admin-edit-product";
 function ProductPage() {
   const { productId } = useParams();
   const [product, setProduct] = useState<Product | null>(null);

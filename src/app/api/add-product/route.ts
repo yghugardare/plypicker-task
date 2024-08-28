@@ -5,25 +5,52 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   await connectDb();
   try {
-    let { productName, price, description, productFirebaseImageLink } =
-      await req.json();
+    let {
+      productName,
+      price,
+      description,
+      productFirebaseImageLink,
+      productBase64ImageUrl,
+      imgType
+    } = await req.json();
     if (!productFirebaseImageLink) {
       return NextResponse.json(
         {
           success: false,
-          message: "Product Image Link Not Available!",
+          message: "Product Image Link Not Provided!",
         },
         {
           status: 400,
         }
       );
     }
+    if (!productBase64ImageUrl) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Product Base 64 Link Not Provided!",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     const newProduct = new Product({
+      productBase64ImageUrl,
       productName,
       productFirebaseImageLink,
       description,
       price,
+      imgType
     });
+    // console.log({
+    //   productBase64ImageUrl,
+    //   productName,
+    //   productFirebaseImageLink,
+    //   description,
+    //   price,
+    // })
     await newProduct.save();
     return NextResponse.json(
       {
