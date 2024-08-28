@@ -1,9 +1,15 @@
 "use client";
 
+import EditProduct from "@/components/component/edit-product";
+import { Button } from "@/components/ui/button";
 import useUserStore from "@/store/user-store";
+import Image from "next/image";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 
 function EditPage() {
   const user = useUserStore((s) => s.user);
+  
   if(!user){ 
     return <div className="w-full h-full flex justify-center items-center">
 
@@ -15,7 +21,9 @@ function EditPage() {
     // any how
     return <h1>You are not authorized to access this route</h1>;
   }
-  return <div>EditPage</div>;
+  return (
+    <EditProduct/>
+  );
 }
 
 export default EditPage;

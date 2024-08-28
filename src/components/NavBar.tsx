@@ -10,6 +10,7 @@ import { useToast } from "./ui/use-toast";
 import { useEffect } from "react";
 import useUserStore from "@/store/user-store";
 import fetchUser from "@/lib/fetch-user";
+import { ModeToggle } from "./mode-toggle";
 
 function NavBar() {
   const router = useRouter();
@@ -39,6 +40,7 @@ function NavBar() {
         Ply<span className="text-primary italic">Picker</span>
       </h1></Link>
       <ul className="flex items-center mr-24 gap-x-10">
+        <ModeToggle/>
         {user && (
           <li className="hover:text-primary">
             <Link href={"/dashboard"}>Dashboard</Link>

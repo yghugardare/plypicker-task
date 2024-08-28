@@ -34,9 +34,13 @@ import {
 import { JSX, SVGProps } from "react";
 import AddProduct from "./add-product";
 import useUserStore from "@/store/user-store";
+import { Input } from "../ui/input";
+import useSearchTermStore from "@/store/search-term-store";
 function MobileSideBar() {
   const pathname = usePathname();
   const user = useUserStore((state) => state.user);
+  const searchTerm = useSearchTermStore((state) => state.searchTerm)
+  const setSearchTerm = useSearchTermStore((state) => state.setSearchTerm);
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background px-4 md:px-6">
       <Sheet>
@@ -71,30 +75,24 @@ function MobileSideBar() {
               <FilePenIcon className="h-5 w-5" />
               {user?.role === "admin" ? "Edit Product" : "Request Change"}
             </Link>
-            {
-                user?.role === "admin" && (
-                    <Link
-              href="/dashboard/pending-requests"
-              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
-             
-            >
-              <CircleCheckIcon className="h-5 w-5" />
-              Review Requests
-            </Link>
-                )
-            }
-            {
-                user?.role=== "team-member" && (
-                    <Link
-              href="/dashboard/my-submissions"
-              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
-              
-            >
-              <CircleCheckIcon className="h-5 w-5" />
-              My Submissions
-            </Link>
-                )
-            }
+            {user?.role === "admin" && (
+              <Link
+                href="/dashboard/pending-requests"
+                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
+              >
+                <CircleCheckIcon className="h-5 w-5" />
+                Review Requests
+              </Link>
+            )}
+            {user?.role === "team-member" && (
+              <Link
+                href="/dashboard/my-submissions"
+                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
+              >
+                <CircleCheckIcon className="h-5 w-5" />
+                My Submissions
+              </Link>
+            )}
           </div>
         </SheetContent>
       </Sheet>
@@ -119,25 +117,50 @@ function MobileSideBar() {
               {pathname === "/dashboard/add" && "Add Product"}
               {pathname === "/dashboard/pending-requests" && "Review Changes"}
               {pathname === "/dashboard/products" && "Products"}
-              {pathname === "/dashboard/my-submissions" && user?.role==="team-member" && "Team Member Submissions"}
+              {pathname === "/dashboard/my-submissions" &&
+                user?.role === "team-member" &&
+                "Team Member Submissions"}
             </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild />
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>Settings</DropdownMenuItem>
-          <DropdownMenuItem>Support</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>Logout</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {pathname === "/dashboard/products" && (
+        <div className="relative">
+          <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search products..."
+            className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      )}
     </header>
   );
 }
+function SearchIcon(
+  props: JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>
+) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
+  );
+}
+
 function CircleCheckIcon(
   props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>
 ) {
