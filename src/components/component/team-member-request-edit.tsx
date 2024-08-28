@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-
+import { useSearchParams } from "next/navigation";
 import { JSX, SVGProps } from "react";
 
 import usePreviewImg from "@/hooks/usePreviewImg";
@@ -21,12 +21,12 @@ import { storage } from "@/lib/firebaseConfig";
 import setCanvasPreview from "@/hooks/setCanvasPreview";
 import { useToast } from "../ui/use-toast";
 import { type Product } from "./admin-edit-product";
+import useUserStore from "@/store/user-store";
 const MIN_WIDTH = 50;
 const ASPECT_RATIO = 1;
 
-
-function TeamMemberEditRequest({product}:{product:Product}) {
-    const [crop, setCrop] = useState<Crop>();
+function TeamMemberEditRequest({ product }: { product: Product }) {
+  const [crop, setCrop] = useState<Crop>();
   const [productName, setProductName] = useState<string>(product.productName);
   const [price, setPrice] = useState<string>(product.price);
   const [description, setDescription] = useState<string>(product.description);
@@ -37,7 +37,10 @@ function TeamMemberEditRequest({product}:{product:Product}) {
   const imageRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const searchParams = useSearchParams();
+  const fileType = searchParams.get("fileType");
   const { toast } = useToast();
+  const user = useUserStore((state) => state.user);
   const {
     imgUrl,
     setImgUrl,
@@ -62,10 +65,100 @@ function TeamMemberEditRequest({product}:{product:Product}) {
     const centeredCrop = centerCrop(crop, width, height);
     setCrop(centeredCrop);
   };
-  const handleEditProduct = (e:SyntheticEvent<HTMLFormElement>) => {
+  const handleRequestProduct = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-  }
+    setSubmiting(true);
+    // checks if any changes are really made
+    // this will help me avoiding unnecassary
+    // API call to the db
+    // console.log("base 64",product.productBase64ImageUrl)
+    if (
+      productName === product.productName &&
+      description === product.description &&
+      price === product.price &&
+      firebaseBase64UploadUrl.length <= 0
+    ) {
+      toast({
+        variant: "destructive",
+        title: "Make Changes",
+        description:
+          "No changes detected, If you really want to change a product please make atleast one change",
+      });
+      setSubmiting(false);
+      return;
+    }
+    let imgFileType;
+    // if croped the existing image
+    if (!imgFile) {
+      // toast({
+      //   title: "Nahi hai",
+      //   description: product.imgType,
+      // });
+      imgFileType = product.imgType;
+    } else {
+      // if uploaded new image
+      // toast({
+      //   title: "Hai",
+      //   description: imgFile.type,
+      // });
+      imgFileType = imgFile.type;
+    }
+    const storageRef = ref(
+      storage,
+      `images/review_product${product.productName}_${Date.now()}`
+    );
+    try {
+      await uploadString(storageRef, firebaseBase64UploadUrl, "base64", {
+        contentType: imgFileType,
+      });
+      let productFirebaseImageLink = null;
+      if (firebaseBase64UploadUrl.length > 0) {
+        // if new image uploaded or croped
+        productFirebaseImageLink = await getDownloadURL(storageRef);
+        console.log(productFirebaseImageLink);
+        setFirebaseImage(productFirebaseImageLink);
+        console.log("You have either croped or upload img");
+      }
+      const reviewData = {
+        productId: product?._id,
+        productName,
+        price,
+        description,
+        productFirebaseImageLink : productFirebaseImageLink || product.productFirebaseImageLink,
+        productBase64ImageUrl: product?.productBase64ImageUrl,
+        author: user?.email,
+      };
+      console.log(reviewData);
+      const response = await fetch("/api/submit-review", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(reviewData),
+      });
+      const data = await response.json();
+      if (!data.success) {
+        toast({
+          title: "Failed!",
+          description: "Failed to submit review!"+data.message,
+          variant: "destructive",
+        });
+        setSubmiting(false);
+        return;
+      }
+      toast({
+        title: "Success",
+        description: data.message,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Success",
+        description: error.message,
+      });
+    } finally {
+      setSubmiting(false);
+    }
+  };
   return (
     <main className="grid md:grid-cols-2 gap-8 p-4 md:p-6">
       <div>
@@ -166,7 +259,17 @@ function TeamMemberEditRequest({product}:{product:Product}) {
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => setIsCropping((isCropping) => !isCropping)}
+              onClick={() => {
+                // we want crop the existing image
+                if (firebaseBase64UploadUrl.length <= 0) {
+                  setImgUrl(product.productBase64ImageUrl);
+                  setFirebaseBase64UploadUrl(
+                    product.productBase64ImageUrl.split(",")[1]
+                  );
+                }
+
+                setIsCropping((isCropping) => !isCropping);
+              }}
             >
               <CropIcon className="w-5 h-5 mr-2" />
               {isCropping ? "Stop Cropping" : "Crop Image"}
@@ -176,8 +279,8 @@ function TeamMemberEditRequest({product}:{product:Product}) {
         </div>
       </div>
       <div>
-        <h2 className="text-2xl font-bold mb-4">Add New Product</h2>
-        <form className="grid gap-4" onSubmit={(e) => handleEditProduct(e)}>
+        <h2 className="text-2xl font-bold mb-4">Request Change </h2>
+        <form className="grid gap-4" onSubmit={(e) => handleRequestProduct(e)}>
           <div className="grid gap-2">
             <Label htmlFor="name">Product Name</Label>
             <Input
@@ -221,221 +324,220 @@ function TeamMemberEditRequest({product}:{product:Product}) {
         </form>
       </div>
     </main>
-  )
+  );
 }
 function CropIcon(
-    props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>
-  ) {
-    return (
-      <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M6 2v14a2 2 0 0 0 2 2h14" />
-        <path d="M18 22V8a2 2 0 0 0-2-2H2" />
-      </svg>
-    );
-  }
-  
-  function UploadIcon(
-    props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>
-  ) {
-    return (
-      <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-        <polyline points="17 8 12 3 7 8" />
-        <line x1="12" x2="12" y1="3" y2="15" />
-      </svg>
-    );
-  }
-  function CircleCheckIcon(
-    props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>
-  ) {
-    return (
-      <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <circle cx="12" cy="12" r="10" />
-        <path d="m9 12 2 2 4-4" />
-      </svg>
-    );
-  }
-  
-  function CircleXIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
-    return (
-      <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <circle cx="12" cy="12" r="10" />
-        <path d="m15 9-6 6" />
-        <path d="m9 9 6 6" />
-      </svg>
-    );
-  }
-  
-  function FilePenIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
-    return (
-      <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M12 22h6a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v10" />
-        <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-        <path d="M10.4 12.6a2 2 0 1 1 3 3L8 21l-4 1 1-4Z" />
-      </svg>
-    );
-  }
-  
-  function InboxIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
-    return (
-      <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
-        <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
-      </svg>
-    );
-  }
-  
-  function MenuIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
-    return (
-      <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <line x1="4" x2="20" y1="12" y2="12" />
-        <line x1="4" x2="20" y1="6" y2="6" />
-        <line x1="4" x2="20" y1="18" y2="18" />
-      </svg>
-    );
-  }
-  
-  function Package2Icon(
-    props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>
-  ) {
-    return (
-      <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z" />
-        <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9" />
-        <path d="M12 3v6" />
-      </svg>
-    );
-  }
-  
-  function PlusIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
-    return (
-      <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M5 12h14" />
-        <path d="M12 5v14" />
-      </svg>
-    );
-  }
-  
-  function UsersIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
-    return (
-      <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-      </svg>
-    );
-  }
- 
+  props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>
+) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M6 2v14a2 2 0 0 0 2 2h14" />
+      <path d="M18 22V8a2 2 0 0 0-2-2H2" />
+    </svg>
+  );
+}
 
-export default TeamMemberEditRequest
+function UploadIcon(
+  props: React.JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>
+) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" x2="12" y1="3" y2="15" />
+    </svg>
+  );
+}
+function CircleCheckIcon(
+  props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>
+) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
+function CircleXIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="m15 9-6 6" />
+      <path d="m9 9 6 6" />
+    </svg>
+  );
+}
+
+function FilePenIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 22h6a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v10" />
+      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+      <path d="M10.4 12.6a2 2 0 1 1 3 3L8 21l-4 1 1-4Z" />
+    </svg>
+  );
+}
+
+function InboxIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+      <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+    </svg>
+  );
+}
+
+function MenuIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <line x1="4" x2="20" y1="12" y2="12" />
+      <line x1="4" x2="20" y1="6" y2="6" />
+      <line x1="4" x2="20" y1="18" y2="18" />
+    </svg>
+  );
+}
+
+function Package2Icon(
+  props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>
+) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z" />
+      <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9" />
+      <path d="M12 3v6" />
+    </svg>
+  );
+}
+
+function PlusIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 12h14" />
+      <path d="M12 5v14" />
+    </svg>
+  );
+}
+
+function UsersIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
+export default TeamMemberEditRequest;

@@ -1,5 +1,6 @@
 "use client";
 
+import { PendingRequests } from "@/components/component/pending-requests";
 import useUserStore from "@/store/user-store";
 
 function ReviewPage() {
@@ -18,7 +19,7 @@ function ReviewPage() {
     // any how
     return <h1>You are not authorized to access this route</h1>;
   }
-  return <div>ReviewPage</div>;
+  return <PendingRequests/>;
 }
 
 export default ReviewPage;
