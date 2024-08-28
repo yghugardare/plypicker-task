@@ -3,7 +3,7 @@
 import useUserStore from '@/store/user-store';
 
 
-function page() {
+function Page() {
     const user = useUserStore((state) => state.user);
     if(!user){
         <div>loading...</div>
@@ -16,5 +16,3 @@ function page() {
     </div>
   )
 }
-
-export default page
