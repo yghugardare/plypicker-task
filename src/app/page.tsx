@@ -1,5 +1,6 @@
 "use client";
 
+import { Hero } from "@/components/component/hero";
 import fetchUser from "@/lib/fetch-user";
 import useUserStore from "@/store/user-store";
 import { useEffect } from "react";
@@ -11,8 +12,6 @@ export default function Home() {
     setUser(user);
   }, [setUser]);
   return (
-    <main>
-      <div>hi</div>
-    </main>
+    <Hero/>
   );
 }
