@@ -49,7 +49,6 @@ export function TeamMemberSubmissions({ email }: { email: string }) {
     // Define an async function to fetch the submissions
     const fetchSubmissions = async () => {
       try {
-        
         const response = await fetch(`/api/my-submissions?email=${email}`);
 
         // Check if the response is successful
@@ -89,8 +88,8 @@ export function TeamMemberSubmissions({ email }: { email: string }) {
 
     // Call the async function to fetch the submissions
     fetchSubmissions();
-  }, [toast,email]);
-  
+  }, [toast, email]);
+
   if (loading) {
     return (
       <div className="w-full h-full flex justify-center items-center">
@@ -117,7 +116,11 @@ export function TeamMemberSubmissions({ email }: { email: string }) {
           className="relative overflow-hidden transition-transform shadow-muted duration-300 ease-in-out rounded-lg shadow-lg group hover:shadow-xl hover:-translate-y-2"
         >
           <Image
-            src={submission.productBase64ImageUrl}
+            priority={true}
+            src={
+              submission.productFirebaseImageLink ||
+              submission.productBase64ImageUrl
+            }
             alt={submission.productName}
             width={500}
             height={400}

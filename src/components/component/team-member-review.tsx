@@ -91,7 +91,10 @@ function TeamMemberReview() {
           <CardContent className="grid gap-4">
             <div className="aspect-square bg-muted rounded-md overflow-hidden">
               <Image
-                src={product.productFirebaseImageLink || product.productBase64ImageUrl}
+                src={
+                  product.productFirebaseImageLink ||
+                  product.productBase64ImageUrl
+                }
                 alt="Place holder"
                 width={300}
                 height={300}
@@ -114,14 +117,18 @@ function TeamMemberReview() {
         <div className="md:flex  items-center gap-x-2">
           <h2 className="text-xl font-bold">Requested Changes</h2>
           <h3 className="text-md font-semibold">
-            [Review Submitted - {formatDistanceToNow(new Date(review.createdAt))} ago]
+            [Review Submitted -{" "}
+            {formatDistanceToNow(new Date(review.createdAt))} ago]
           </h3>
         </div>
         <Card>
           <CardContent className="grid gap-4">
             <div className="aspect-square  rounded-md overflow-hidden ">
               <Image
-                src={review.productFirebaseImageLink || review.productBase64ImageUrl}
+                src={
+                  review.productFirebaseImageLink ||
+                  review.productBase64ImageUrl
+                }
                 alt="Requested Product Image"
                 width={300}
                 height={300}
@@ -140,48 +147,51 @@ function TeamMemberReview() {
           </CardContent>
         </Card>
         <div className="flex justify-end">
-          {
-            review.status === "pending" && (
-                <Badge
-            variant={"outline"}
-            className="rounded-[1000px] bg-[#fde047] px-4 py-2 text-[#854d0e]  flex items-center gap-x-2"
-          >
-            <span className="relative flex rounded-lg  h-2.5 w-2.5">
-              <span
-                id="sp"
-                className="rounded-lg bg-[#854d0e] w-full h-full absolute "
-              ></span>
-              <span className="w-full h-full  rounded-lg bg-[#854d0e]"></span>
-            </span>
-            <span>Pending</span>
-          </Badge>
-            )
-          }
-          {
-            review.status === "approved" && (
-                <Badge className="px-4 py-2 rounded-[10000px]" variant={"default"}>
-                    Approved
-                </Badge>
-            )
-          }
-          {
-            review.status === "rejected" && (
-                <Badge className="px-4 py-2 rounded-[10000px]" variant={"destructive"}>
-                    Rejected
-                </Badge>
-            )
-          }
+          {review.status === "pending" && (
+            <Badge
+              variant={"outline"}
+              className="rounded-[1000px] bg-[#fde047] px-4 py-2 text-[#854d0e]  flex items-center gap-x-2"
+            >
+              <span className="relative flex rounded-lg  h-2.5 w-2.5">
+                <span
+                  id="sp"
+                  className="rounded-lg bg-[#854d0e] w-full h-full absolute "
+                ></span>
+                <span className="w-full h-full  rounded-lg bg-[#854d0e]"></span>
+              </span>
+              <span>Pending</span>
+            </Badge>
+          )}
+          {review.status === "approved" && (
+            <Badge className="px-4 py-2 rounded-[10000px]" variant={"default"}>
+              Approved
+            </Badge>
+          )}
+          {review.status === "rejected" && (
+            <Badge
+              className="px-4 py-2 rounded-[10000px]"
+              variant={"destructive"}
+            >
+              Rejected
+            </Badge>
+          )}
         </div>
-        {
-            review.status === "approved" && (
-                <p className="text-md text-secondary-foreground italic">Approved by <span className="text-lg text-primary not-italic">{review.admin}</span></p>
-            )
-        }
-        {
-            review.status === "rejected" && (
-                <p className="text-md text-secondary-foreground italic ">Rejected by <span className="text-lg text-primary not-italic">{review.admin}</span></p>
-            )
-        }
+        {review.status === "approved" && (
+          <p className="text-md text-secondary-foreground italic">
+            Approved by{" "}
+            <span className="text-lg text-primary not-italic">
+              {review.admin}
+            </span>
+          </p>
+        )}
+        {review.status === "rejected" && (
+          <p className="text-md text-secondary-foreground italic ">
+            Rejected by{" "}
+            <span className="text-lg text-primary not-italic">
+              {review.admin}
+            </span>
+          </p>
+        )}
       </div>
     </main>
   );
