@@ -102,7 +102,7 @@ export function PendingRequests() {
               <h4 className="text-lg font-semibold md:text-xl">
                 ${parseFloat(request.price).toFixed(2)}
               </h4>
-              <Link href={`/pending-requests/${request._id}`}>
+              <Link href={`/dashboard/pending-requests/${request._id}`}>
                 <Button variant="outline" className="mt-4 w-full">
                   View Request
                 </Button>

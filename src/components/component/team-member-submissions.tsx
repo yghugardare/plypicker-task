@@ -89,7 +89,7 @@ export function TeamMemberSubmissions({ email }: { email: string }) {
 
     // Call the async function to fetch the submissions
     fetchSubmissions();
-  }, [toast]);
+  }, [toast,email]);
 
   if (loading) {
     return (
@@ -152,9 +152,9 @@ export function TeamMemberSubmissions({ email }: { email: string }) {
               <h4 className="text-lg font-semibold md:text-xl">
                 ${parseFloat(submission.price).toFixed(2)}
               </h4>
-              <Link href={`/pending-requests/${submission?._id}`}>
+              <Link href={`/dashboard/my-submissions/${submission?._id}`}>
                 <Button variant="outline" className="mt-4 w-full">
-                  View Request
+                  View Submission
                 </Button>
               </Link>
             </div>
