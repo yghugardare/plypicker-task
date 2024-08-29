@@ -46,11 +46,7 @@ function NavBar() {
             <Link href={"/dashboard"}>Dashboard</Link>
           </li>
         )}
-        {user && (
-          <li className="hover:text-primary">
-            <Link href={"/profile"}>Profile</Link>
-          </li>
-        )}
+        
         {user ? (
           <li className="hover:text-primary">
             <button onClick={handleLogout}>Logout</button>
