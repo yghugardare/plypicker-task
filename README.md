@@ -1,39 +1,60 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Ply picker task
 
-## Getting Started
+## Tech stack used 
 
-First, run the development server:
+- **Next.js + TypeScript** - For frontend and backend
+- **Mongoose + MongoDB** - For database and ODM
+- **Zustand** - For persistant Global state management
+- **react-image-crop** - For implementing image crop
+- **Firebase cloud storage** - to store images in cloud
+- **Shadcn UI + Tailwind CSS** - For UI styling
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Routes - 
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### API Routes - 
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `api/add-product` - To add product as admin
+- `api/delete-product` - To delete product as admin
+- `api/edit-product` - To edit product as admin
+- `api/get-product` - To get product with id
+- `api/get-products` - To get all product 
+- `api/admin-recent-reqs` - fetch recent approved/rejected requests of admin in array with limit 5
+- `api/approve` - Approve changes as admin
+- `api/reject` - Reject changes as admin
+- `api/pending-requests` -  get all pending requests as admin
+- `api/pending-requests/[requestId]` -  get a particular request id. 
+- `api/my-submissions` - get all submissions of team memeber
+- `api/submit-review` - To submit product for changes
+- `api/review-stats` - To review stats of admin like total requests recived, approved and reject
+- `app/team-member-stats` - To see stats of team member , ie , num of reqs he made, reqs that got approved / rejected
+- `app/login` - login user based on role
+- `app/register` - register user based on role
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### App routes
 
-## Learn More
+All `app/dashboard` routes - 
 
-To learn more about Next.js, take a look at the following resources:
+- /add - add product
+- /my-submissions - get all submissions for team memeber
+- `/my-submissions/[submissionId]` - review particular submission for team memeber
+- /pending-requests - get all pending requests for the admin
+- `/pending-requests/[reqId]` - get a particular request and accept / reject it for admin
+-/products  -  GET all products
+- `/product/product/[id]` - get a particular product and perform edits based on role
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Work flow Diagrams
 
-## Deploy on Vercel
+### Upload and Croping mechanism
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+![upload and crop](public/image-1.png)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+### Model Relations
+
+![models](public/image.png)
+
+## Issues
+
 
 ### State Persistance issue
 ### Documentation: Understanding and Solving Hydration Issues in Next.js 14
