@@ -256,7 +256,7 @@ function AdminEditProduct({ product }: { product: Product }) {
             {!isCropping && (
               <div className=" w-full h-[500px] bg-muted rounded-md ">
                 <Image
-                  src={imgUrl || product.productBase64ImageUrl}
+                  src={imgUrl || product.productFirebaseImageLink || product.productBase64ImageUrl}
                   alt="Product Image"
                   width={400}
                   height={400}

@@ -146,6 +146,7 @@ function AddProduct() {
             {!isCropping && (
               <div className=" w-full h-[500px] bg-muted rounded-md ">
                 <Image
+                  priority={true}
                   src={imgUrl || "/placeholder.svg"}
                   alt="Product Image"
                   width={400}

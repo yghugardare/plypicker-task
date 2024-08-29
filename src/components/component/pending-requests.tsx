@@ -85,7 +85,7 @@ export function PendingRequests() {
           className="relative overflow-hidden transition-transform shadow-muted duration-300 ease-in-out rounded-lg shadow-lg group hover:shadow-xl hover:-translate-y-2"
         >
           <Image
-            src={request.productFirebaseImageLink}
+            src={request.productFirebaseImageLink || request.productBase64ImageUrl}
             alt={request.productName}
             width={500}
             height={400}

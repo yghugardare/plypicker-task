@@ -195,7 +195,10 @@ function AdminReviewProduct() {
           <CardContent className="grid gap-4">
             <div className="aspect-square bg-muted rounded-md overflow-hidden">
               <Image
-                src={product.productBase64ImageUrl}
+                src={
+                  product.productFirebaseImageLink ||
+                  product.productBase64ImageUrl
+                }
                 alt="Place holder"
                 width={300}
                 height={300}
@@ -225,7 +228,11 @@ function AdminReviewProduct() {
           <CardContent className="grid gap-4">
             <div className="aspect-square  rounded-md overflow-hidden ">
               <Image
-                src={review.productBase64ImageUrl}
+                priority={true}
+                src={
+                  review.productFirebaseImageLink ||
+                  review.productBase64ImageUrl
+                }
                 alt="Requested Product Image"
                 width={300}
                 height={300}
