@@ -29,11 +29,93 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import { JSX, SVGProps } from "react";
+import { JSX, SVGProps, useEffect, useState } from "react";
 import AddProduct from "./add-product";
 import useUserStore from "@/store/user-store";
-
+import { truncateString } from "@/lib/truncateString";
+export interface RecentReview {
+  _id: string;
+  productId: string;
+  productName: string;
+  status: "approved" | "rejected";
+  admin: string;
+}
 function RequestsTeamMember() {
+  const [recentReviews, setRecentReviews] = useState<RecentReview[]>([]);
+  const [stats, setStats] = useState({
+    totalRequestsCount: 0,
+    acceptedRequestsCount: 0,
+    rejectedRequestsCount: 0,
+  });
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const user = useUserStore(s=>s.user)
+  useEffect(() => {
+    const fetchTeamMemberStats = async () => {
+      try {
+        const response = await fetch(`/api/team-member-stats?authorEmail=${user?.email}`);
+
+        if (!response.ok) {
+          setError("Failed to fetch team member statistics");
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          setStats(data.data);
+        } else {
+          setError(data.message);
+        }
+      } catch (error: any) {
+        setError(error.message || "An unexpected error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeamMemberStats();
+  }, [user?.email]);
+  useEffect(() => {
+    const fetchRecentRequests = async () => {
+      setLoading(true);
+      setError(null); // Reset error state before making the request
+
+      try {
+        const response = await fetch(`/api/recent-requests?userEmail=${user?.email}`);
+        console.log(user?.email)
+
+        if (!response.ok) {
+          setError("Failed to fetch recent requests");
+          setLoading(false);
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          setRecentReviews(data.data);
+          console.log(data.data)
+        } else {
+          setError(data.message);
+        }
+      } catch (error: any) {
+        setError(error.message || "An unexpected error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecentRequests();
+  }, [user?.email]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
   return (
     
       
@@ -50,7 +132,7 @@ function RequestsTeamMember() {
               </div>
             </CardHeader>
             <CardContent className="py-2">
-              <div className="text-2xl font-bold">1,234</div>
+              <div className="text-2xl font-bold">{stats.totalRequestsCount}</div>
             </CardContent>
           </Card>
           <Card className="flex flex-col items-center justify-center">
@@ -63,7 +145,7 @@ function RequestsTeamMember() {
               </div>
             </CardHeader>
             <CardContent className="py-1">
-              <div className="text-2xl font-bold">789</div>
+              <div className="text-2xl font-bold">{stats.acceptedRequestsCount}</div>
             </CardContent>
           </Card>
           <Card className="flex flex-col items-center justify-center">
@@ -76,7 +158,7 @@ function RequestsTeamMember() {
               </div>
             </CardHeader>
             <CardContent className="py-1">
-              <div className="text-2xl font-bold">345</div>
+              <div className="text-2xl font-bold">{stats.rejectedRequestsCount}</div>
             </CardContent>
           </Card>
         </div>
@@ -88,81 +170,56 @@ function RequestsTeamMember() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Username</TableHead>
-                  <TableHead>Email</TableHead>
+                  <TableHead>Id</TableHead>
+                  <TableHead>Product Id</TableHead>
+                  <TableHead>Product Name</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead>Admin</TableHead>
+                  <TableHead>View</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow>
-                  <TableCell>
-                    <div className="font-medium">John Doe</div>
-                  </TableCell>
-                  <TableCell>
-                    <div>john@example.com</div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-[1000px] bg-primary" />
-                      <div>Approved</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>2023-06-01</div>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <div className="font-medium">Jane Smith</div>
-                  </TableCell>
-                  <TableCell>
-                    <div>jane@example.com</div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-[1000px] bg-[#ff3c3c]" />
-                      <div>Rejected</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>2023-06-02</div>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <div className="font-medium">Bob Johnson</div>
-                  </TableCell>
-                  <TableCell>
-                    <div>bob@example.com</div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-[1000px] bg-primary" />
-                      <div>Approved</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>2023-06-03</div>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <div className="font-medium">Alice Williams</div>
-                  </TableCell>
-                  <TableCell>
-                    <div>alice@example.com</div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-[1000px] bg-[#ff3c3c]" />
-                      <div>Rejected</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>2023-06-04</div>
-                  </TableCell>
-                </TableRow>
+                {
+                  recentReviews.map((review) => (
+                    <TableRow key={review._id}>
+                    <TableCell>
+                      <div className="font-medium">{truncateString(review._id,10)}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div>{truncateString(review.productId,10)}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div>{review.productName}</div>
+                    </TableCell>
+                    <TableCell>
+                      { review.status === "approved" &&
+                        <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-[1000px] bg-primary" />
+                        <div>Approved</div>
+                      </div>
+                      }
+                      { review.status === "rejected" &&
+                        <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-[1000px] bg-[red]" />
+                        <div>Rejected</div>
+                      </div>
+                      }
+                    </TableCell>
+                    <TableCell>
+                      <div>{review.admin}</div>
+                    </TableCell>
+                    <TableCell>
+                      <Link href={"/dashboard/my-submissions/"+review._id}>
+                      <Button variant={"secondary"}>View</Button>
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                  ))
+                }
+                
+                
+               
+                
               </TableBody>
             </Table>
           </CardContent>

@@ -29,146 +29,202 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import { JSX, SVGProps } from "react";
+import { JSX, SVGProps, useEffect, useState } from "react";
 import AddProduct from "./add-product";
 import useUserStore from "@/store/user-store";
-
+import { truncateString } from "@/lib/truncateString";
+interface RecentReview {
+  _id: string;
+  productId: string;
+  productName: string;
+  status: "approved" | "rejected";
+  author: string;
+}
 function Requests() {
-  return (
-    
-      
+  const [recentReviews, setRecentReviews] = useState<RecentReview[]>([]);
+  const [stats, setStats] = useState({
+    totalReviewsCount: 0,
+    acceptedReviewsCount: 0,
+    rejectedReviewsCount: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const user = useUserStore((state) => state.user);
+  useEffect(() => {
+    const fetchReviewStats = async () => {
+      try {
+        const response = await fetch(
+          `/api/review-stats?adminEmail=${user?.email}`
+        );
 
-      <main className="p-4 md:p-6  ">
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card className="flex flex-col items-center justify-center">
-            <CardHeader className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <UsersIcon className="h-5 w-5 text-[#53e0e7]" />
-                <CardTitle className="text-sm font-medium">
-                  Total Requests Received
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="py-2">
-              <div className="text-2xl font-bold">1,234</div>
-            </CardContent>
-          </Card>
-          <Card className="flex flex-col items-center justify-center">
-            <CardHeader className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CircleCheckIcon className="h-5 w-5 text-primary" />
-                <CardTitle className="text-sm font-medium">
-                  Total Requests Approved
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="py-1">
-              <div className="text-2xl font-bold">789</div>
-            </CardContent>
-          </Card>
-          <Card className="flex flex-col items-center justify-center">
-            <CardHeader className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CircleXIcon className="h-5 w-5 text-[red]" />
-                <CardTitle className="text-sm font-medium">
-                  Total Requests Rejected
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="py-1">
-              <div className="text-2xl font-bold">345</div>
-            </CardContent>
-          </Card>
-        </div>
-        <Card className="md:mt-6 mt-4 py-2 ">
-          <CardHeader>
-            <CardTitle>Recent Requests</CardTitle>
+        if (!response.ok) {
+          setError("Failed to fetch review statistics");
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          setStats(data.data);
+        } else {
+          setError(data.message);
+        }
+      } catch (error: any) {
+        setError(error.message || "An unexpected error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReviewStats();
+  }, [user?.email]);
+  useEffect(() => {
+    const fetchRecentRequests = async () => {
+      setLoading(true);
+      setError(null); // Reset error state before making the request
+
+      try {
+        const response = await fetch(
+          `/api/admin-recent-reqs?userEmail=${user?.email}`
+        );
+        console.log(user?.email);
+
+        if (!response.ok) {
+          setError("Failed to fetch recent requests");
+          setLoading(false);
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          setRecentReviews(data.data);
+          console.log(data.data);
+        } else {
+          setError(data.message);
+        }
+      } catch (error: any) {
+        setError(error.message || "An unexpected error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecentRequests();
+  }, [user?.email]);
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+  return (
+    <main className="p-4 md:p-6  ">
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="flex flex-col items-center justify-center">
+          <CardHeader className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <UsersIcon className="h-5 w-5 text-[#53e0e7]" />
+              <CardTitle className="text-sm font-medium">
+                Total Requests Received
+              </CardTitle>
+            </div>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Username</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow>
-                  <TableCell>
-                    <div className="font-medium">John Doe</div>
-                  </TableCell>
-                  <TableCell>
-                    <div>john@example.com</div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-[1000px] bg-primary" />
-                      <div>Approved</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>2023-06-01</div>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <div className="font-medium">Jane Smith</div>
-                  </TableCell>
-                  <TableCell>
-                    <div>jane@example.com</div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-[1000px] bg-[#ff3c3c]" />
-                      <div>Rejected</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>2023-06-02</div>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <div className="font-medium">Bob Johnson</div>
-                  </TableCell>
-                  <TableCell>
-                    <div>bob@example.com</div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-[1000px] bg-primary" />
-                      <div>Approved</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>2023-06-03</div>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <div className="font-medium">Alice Williams</div>
-                  </TableCell>
-                  <TableCell>
-                    <div>alice@example.com</div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-[1000px] bg-[#ff3c3c]" />
-                      <div>Rejected</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>2023-06-04</div>
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+          <CardContent className="py-2">
+            <div className="text-2xl font-bold">{stats.totalReviewsCount}</div>
           </CardContent>
         </Card>
-      </main>
-    
+        <Card className="flex flex-col items-center justify-center">
+          <CardHeader className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CircleCheckIcon className="h-5 w-5 text-primary" />
+              <CardTitle className="text-sm font-medium">
+                Total Requests Approved
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="py-1">
+            <div className="text-2xl font-bold">
+              {stats.acceptedReviewsCount}
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="flex flex-col items-center justify-center">
+          <CardHeader className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CircleXIcon className="h-5 w-5 text-[red]" />
+              <CardTitle className="text-sm font-medium">
+                Total Requests Rejected
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="py-1">
+            <div className="text-2xl font-bold">
+              {stats.rejectedReviewsCount}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      <Card className="md:mt-6 mt-4 py-2 ">
+        <CardHeader>
+          <CardTitle>Recent Requests</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Id</TableHead>
+                <TableHead>Product Id</TableHead>
+                <TableHead>Product Name</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Team Member</TableHead>
+                <TableHead>View</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {recentReviews.map((review) => (
+                <TableRow key={review._id}>
+                  <TableCell>
+                    <div className="font-medium">
+                      {truncateString(review._id, 10)}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div>{truncateString(review.productId, 10)}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div>{review.productName}</div>
+                  </TableCell>
+                  <TableCell>
+                    {review.status === "approved" && (
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-[1000px] bg-primary" />
+                        <div>Approved</div>
+                      </div>
+                    )}
+                    {review.status === "rejected" && (
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-[1000px] bg-[red]" />
+                        <div>Rejected</div>
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div>{review.author}</div>
+                  </TableCell>
+                  <TableCell>
+                    <Link href={"/dashboard/my-submissions/" + review._id}>
+                      <Button variant={"secondary"}>View</Button>
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </main>
   );
 }
 function CircleCheckIcon(
@@ -343,7 +399,8 @@ function UsersIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
 
 export default Requests;
 
-{/* <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background px-4 md:px-6">
+{
+  /* <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background px-4 md:px-6">
         <Sheet>
           <SheetTrigger asChild>
             <Button size="icon" variant="outline" className="md:hidden">
@@ -411,4 +468,5 @@ export default Requests;
             <DropdownMenuItem>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </header> */}
+      </header> */
+}

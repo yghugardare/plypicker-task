@@ -174,7 +174,7 @@ function TeamMemberEditRequest({ product }: { product: Product }) {
             {!isCropping && (
               <div className=" w-full h-[500px] bg-muted rounded-md ">
                 <Image
-                  src={imgUrl || product.productFirebaseImageLink}
+                  src={imgUrl || product.productBase64ImageUrl}
                   alt="Product Image"
                   width={400}
                   height={400}

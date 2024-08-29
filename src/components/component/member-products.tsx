@@ -96,7 +96,7 @@ function ProductsToDisplayForTeamMembers() {
         >
           <Image
             priority={true}
-            src={product.productFirebaseImageLink || "/placeholder.svg"}
+            src={product.productBase64ImageUrl || "/placeholder.svg"}
             alt={product.productName}
             width={500}
             height={400}
