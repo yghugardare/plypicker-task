@@ -37,6 +37,7 @@ function EditProduct() {
         // Check if the fetch was successful based on the response
         if (data.success) {
           setProducts(data.data);
+          console.log(data.data)
         } else {
           toast({
             title: "Error",
